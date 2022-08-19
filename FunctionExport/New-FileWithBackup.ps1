@@ -23,7 +23,11 @@ function New-FileWithBackup
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [System.String]
-        $Content
+        $Content,
+
+        [Parameter()]
+        [uint16]
+        $Versions = 0
     )
 
     Write-Verbose -Message "Begin (ErrorActionPreference: $ErrorActionPreference)"
@@ -48,6 +52,16 @@ function New-FileWithBackup
         }
 
         $null = Move-Item -Path $tmpPath -Destination $Path
+
+        if ($Versions)
+        {
+            $bakNameGlob = '{0}.{1}{2}' -f $item.BaseName, '*', $item.Extension
+            $bakPathGlob = Join-Path -Path $item.Directory -ChildPath $bakNameGlob
+            if ($deletePaths = Get-Item -Path $bakPathGlob | Sort-Object -Property LastWriteTimeUtc -Descending | Select-Object -Skip $Versions)
+            {
+                Remove-Item -Path $deletePaths
+            }
+        }
 
         # Non-boilerplate stuff ends here
     }
