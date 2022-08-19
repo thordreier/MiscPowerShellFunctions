@@ -38,7 +38,7 @@ function New-FileWithBackup
         # Non-boilerplate stuff starts here
 
         $tmpPath = '{0}.{1}.tmp' -f $Path, [guid]::NewGuid().Guid
-        Set-Content -Path $tmpPath -Value $Content -NoNewline
+        $null = New-Item -ItemType File -Path $tmpPath -Value $Content
 
         if ($item = Get-Item -Path $Path -ErrorAction Ignore)
         {
