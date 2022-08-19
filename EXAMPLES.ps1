@@ -1,9 +1,10 @@
-# Join-Paths
+### Join-Paths ###
 Join-Paths 'C:','windows','system32','drivers','etc','hosts'
 
-# New-FileWithBackup
+### New-FileWithBackup ###
 Get-Date | New-FileWithBackup -Path (Join-Paths $env:TEMP,'a.txt')
 
+### Invoke-ProcessWithFile ###
 # Don't start a program that require user-input
 @(
     Invoke-ProcessWithFile 'cmd /c echo "hello A"'
@@ -15,3 +16,8 @@ Get-Date | New-FileWithBackup -Path (Join-Paths $env:TEMP,'a.txt')
     Invoke-ProcessWithFile 'powershell -File "{{g.ps1}}"' -Files @{'g.ps1' = '[string]$host.Version; throw'}
     Invoke-ProcessWithFile 'pwsh -File "{{h.ps1}}"' -Files @{'h.ps1' = '[string]$host.Version; throw'}
 ) | select ExitCode,StandardOutputString,StandardErrorString
+
+#### Invoke-PsExec ####
+# PsExec needs to be installed
+# https://docs.microsoft.com/en-us/sysinternals/downloads/psexec
+Invoke-PsExec -ComputerName dc1.contoso.com -ArgumentList 'dcdiag /e' | select ExitCode,StandardOutputString,StandardErrorString | fl
