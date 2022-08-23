@@ -62,6 +62,12 @@ function Get-WsusComputersAndUpdates
             $targetUpdates = $computerTarget.GetUpdateInstallationInfoPerUpdate()
             foreach ($targetUpdate in $targetUpdates)
             {
+                if ($Overview -and $targetUpdate.UpdateInstallationState -in @('Installed','NotApplicable'))
+                {
+                    # We don't need this to make the overview
+                    continue
+                }
+
                 if ($IgnoreUpdates.Contains($targetUpdate.UpdateId))
                 {
                     '  Ignoring update {0}' -f $targetUpdate.UpdateId | Write-Verbose
