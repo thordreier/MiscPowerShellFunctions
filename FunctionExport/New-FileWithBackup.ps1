@@ -53,7 +53,7 @@ function New-FileWithBackup
 
         $null = Move-Item -Path $tmpPath -Destination $Path
 
-        if ($Versions)
+        if ($Versions -and $item)
         {
             $bakNameGlob = '{0}.{1}{2}' -f $item.BaseName, '*', $item.Extension
             $bakPathGlob = Join-Path -Path $item.Directory -ChildPath $bakNameGlob
