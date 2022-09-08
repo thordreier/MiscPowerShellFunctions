@@ -91,7 +91,12 @@ function Get-WsusComputersAndUpdates
         $computerTargetHash = $computerTargets | ForEach-Object -Begin {$h=@{}} -Process {$h[[string]$_.Id]=$_} -End {$h}
         foreach ($status in @('NoStatus','InstalledOrNotApplicable','Needed','Failed'))
         {
-            foreach ($wsusComputer in (Get-WsusComputer -UpdateServer $WsusServer -ComputerUpdateStatus $status))
+            # This is just plain silly. Why doesn't it just return an empty array
+            if (($wsusComputers = Get-WsusComputer -UpdateServer $WsusServer -ComputerUpdateStatus $status) -eq 'No computers available.')
+            {
+                $wsusComputers = @()
+            }
+            foreach ($wsusComputer in $wsusComputers)
             {
                 $computerTargetHash[[string]$wsusComputer.Id]._ComputerUpdateStatus = $status
             }
