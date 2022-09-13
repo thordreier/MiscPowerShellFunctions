@@ -55,6 +55,7 @@ function New-FileWithBackup
 
         if ($Versions -and $item)
         {
+            --$Versions
             $bakNameGlob = '{0}.{1}{2}' -f $item.BaseName, '*', $item.Extension
             $bakPathGlob = Join-Path -Path $item.Directory -ChildPath $bakNameGlob
             if ($deletePaths = Get-Item -Path $bakPathGlob | Sort-Object -Property LastWriteTimeUtc -Descending | Select-Object -Skip $Versions)
