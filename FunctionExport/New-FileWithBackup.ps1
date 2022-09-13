@@ -27,7 +27,12 @@ function New-FileWithBackup
 
         [Parameter()]
         [uint16]
-        $Versions = 0
+        $Versions = 0,
+
+        [Parameter()]
+        [System.String]
+        $Encoding = 'UTF8'
+
     )
 
     Write-Verbose -Message "Begin (ErrorActionPreference: $ErrorActionPreference)"
@@ -48,7 +53,8 @@ function New-FileWithBackup
         }
 
         $tmpPath = '{0}.{1}.tmp' -f $Path, [guid]::NewGuid().Guid
-        $null = New-Item -ItemType File -Path $tmpPath -Value ($Content -join "`r`n")
+        #$null = New-Item -ItemType File -Path $tmpPath -Value ($Content -join "`r`n")
+        $null = $Content | Out-File -FilePath $tmpPath -Encoding $Encoding -NoNewline
 
         if ($item = Get-Item -Path $Path -ErrorAction Ignore)
         {
