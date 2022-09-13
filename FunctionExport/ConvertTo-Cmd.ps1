@@ -96,7 +96,9 @@ function ConvertTo-Cmd
             $ConvertCmd
             if (-not $LeaveTmpFile) {'del %TMPFILE%'}
             $ExecuteCmd
+            'SET EXITCODE=%ERRORLEVEL%'
             if (-not $LeaveEndFile) {'del %ENDFILE%'}
+            'EXIT /B %EXITCODE%'
         ) -join "`r`n"
         
         if ($AsString)
