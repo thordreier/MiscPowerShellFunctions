@@ -22,7 +22,7 @@ function New-FileWithBackup
         $Path,
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
-        [System.String]
+        [System.String[]]
         $Content,
 
         [Parameter()]
@@ -41,8 +41,14 @@ function New-FileWithBackup
 
         # Non-boilerplate stuff starts here
 
+        # Use objects from pipeline dictly - instead of begin/process/end
+        if ($input)
+        {
+            $Content = $input
+        }
+
         $tmpPath = '{0}.{1}.tmp' -f $Path, [guid]::NewGuid().Guid
-        $null = New-Item -ItemType File -Path $tmpPath -Value $Content
+        $null = New-Item -ItemType File -Path $tmpPath -Value ($Content -join "`r`n")
 
         if ($item = Get-Item -Path $Path -ErrorAction Ignore)
         {
