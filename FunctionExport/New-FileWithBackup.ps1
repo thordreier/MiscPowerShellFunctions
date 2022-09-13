@@ -54,7 +54,7 @@ function New-FileWithBackup
 
         $tmpPath = '{0}.{1}.tmp' -f $Path, [guid]::NewGuid().Guid
         #$null = New-Item -ItemType File -Path $tmpPath -Value ($Content -join "`r`n")
-        $null = $Content | Out-File -FilePath $tmpPath -Encoding $Encoding -NoNewline
+        $null = $Content -join "`r`n" | Out-File -FilePath $tmpPath -Encoding $Encoding -NoNewline
 
         if ($item = Get-Item -Path $Path -ErrorAction Ignore)
         {
