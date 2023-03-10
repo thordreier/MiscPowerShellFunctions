@@ -30,6 +30,10 @@ function Invoke-CommandWithRetryAndLimit
         $Parameters = @{},
 
         [Parameter()]
+        [string]
+        $SuccessExceptionRegex = '',
+
+        [Parameter()]
         [byte]
         $RetryCount = 3,
 
@@ -126,16 +130,16 @@ function Invoke-CommandWithRetryAndLimit
                 }
                 'Running ScriptBlock...' | Write-Verbose
                 & $ScriptBlock
-                Start-Sleep -Seconds $WaitSecondsOK
-                if ($SuccessCountdownVariable)
-                {
-                    'SuccessCountdownVariable ${0} is now {1}' -f $SuccessCountdownVariable.Name, --$SuccessCountdownVariable.Value | Write-Verbose
-                }
                 break
             }
             catch
             {
                 'Exception thrown from ScriptBlock: {0}' -f  $_ | Write-Warning
+                if ($SuccessExceptionRegex -and $_ -cmatch $SuccessExceptionRegex)
+                {
+                    'Exception matches "{0}", treating it as a success' -f $_ | Write-Warning
+                    break
+                }
                 if (-not $RetryCount) {throw $_}
                 if ($TotalTryCountdownVariable -and $TotalTryCountdownVariable.Value -le 0) {continue}
                 if ($SuccessCountdownVariable  -and $SuccessCountdownVariable.Value  -le 0) {continue}
@@ -144,6 +148,11 @@ function Invoke-CommandWithRetryAndLimit
             }
         }
         while ($RetryCount--)
+        Start-Sleep -Seconds $WaitSecondsOK
+        if ($SuccessCountdownVariable)
+        {
+            'SuccessCountdownVariable ${0} is now {1}' -f $SuccessCountdownVariable.Name, --$SuccessCountdownVariable.Value | Write-Verbose
+        }
 
         # Non-boilerplate stuff ends here
     }
