@@ -14,16 +14,24 @@ function New-ComplexPassword
             xxx
     #>
 
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Default')]
     param
     (
         [Parameter()]
         [byte]
         $Length = 20,
 
-        [Parameter()]
+        [Parameter(ParameterSetName = 'Default')]
         [System.String[]]
-        $Groups = @('abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789', '.-_')
+        $Groups = @('abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789', ',.-+;!#&@{}[]+$/()%'),
+
+        [Parameter(ParameterSetName = 'Alphanumeric')]
+        [switch]
+        $Alphanumeric,
+
+        [Parameter(ParameterSetName = 'Compatible')]
+        [switch]
+        $Compatible
     )
 
     Write-Verbose -Message "Begin (ErrorActionPreference: $ErrorActionPreference)"
@@ -36,6 +44,9 @@ function New-ComplexPassword
         $global:ErrorActionPreference = $ErrorActionPreference = 'Stop'
 
         # Non-boilerplate stuff starts here
+
+        if ($Alphanumeric) {$Groups = $Groups[0..2]}
+        if ($Compatible) {$Groups = $Groups[0..2] + '.-_'}
 
         $grnd = $Groups | Get-Random -Count $Groups.Length
         (0..($Length-1) | ForEach-Object -Process {
