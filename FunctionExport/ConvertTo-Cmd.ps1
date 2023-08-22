@@ -17,23 +17,31 @@ function ConvertTo-Cmd
     [CmdletBinding()]
     param
     (
-        [Parameter(ParameterSetName='PathDst',    Mandatory = $true)]
-        [Parameter(ParameterSetName='PathStr',    Mandatory = $true)]
+        [Parameter(ParameterSetName='PathDstConvertCmd',    Mandatory = $true)]
+        [Parameter(ParameterSetName='PathDstCompatible',    Mandatory = $true)]
+        [Parameter(ParameterSetName='PathStrConvertCmd',    Mandatory = $true)]
+        [Parameter(ParameterSetName='PathStrCompatible',    Mandatory = $true)]
         [string]
         $Path,
 
-        [Parameter(ParameterSetName='ContentDst', Mandatory = $true)]
-        [Parameter(ParameterSetName='ContentStr', Mandatory = $true)]
+        [Parameter(ParameterSetName='ContentDstConvertCmd', Mandatory = $true)]
+        [Parameter(ParameterSetName='ContentDstCompatible', Mandatory = $true)]
+        [Parameter(ParameterSetName='ContentStrConvertCmd', Mandatory = $true)]
+        [Parameter(ParameterSetName='ContentStrCompatible', Mandatory = $true)]
         [string]
         $Content,
 
-        [Parameter(ParameterSetName='PathDst')]
-        [Parameter(ParameterSetName='ContentDst')]
+        [Parameter(ParameterSetName='PathDstConvertCmd')]
+        [Parameter(ParameterSetName='PathDstCompatible')]
+        [Parameter(ParameterSetName='ContentDstConvertCmd')]
+        [Parameter(ParameterSetName='ContentDstCompatible')]
         [string]
         $Destination,
 
-        [Parameter(ParameterSetName='PathStr',    Mandatory = $true)]
-        [Parameter(ParameterSetName='ContentStr', Mandatory = $true)]
+        [Parameter(ParameterSetName='PathStrConvertCmd',    Mandatory = $true)]
+        [Parameter(ParameterSetName='PathStrCompatible',    Mandatory = $true)]
+        [Parameter(ParameterSetName='ContentStrConvertCmd', Mandatory = $true)]
+        [Parameter(ParameterSetName='ContentStrCompatible', Mandatory = $true)]
         [switch]
         $AsString,
 
@@ -45,9 +53,17 @@ function ConvertTo-Cmd
         [string]
         $EndFile = '%TEMP%\{0}.ps1',
 
-        [Parameter()]
-        [string]
-        $ConvertCmd = 'powershell.exe -Command "[Text.Encoding]::Unicode.GetString([Convert]::FromBase64String((gc %TMPFILE%))) | sc %ENDFILE% -NoNewline"',
+        [Parameter(ParameterSetName='PathDstConvertCmd')]
+        [Parameter(ParameterSetName='PathStrConvertCmd')]
+        [Parameter(ParameterSetName='ContentDstConvertCmd')]
+        [Parameter(ParameterSetName='ContentStrConvertCmd')]
+        $ConvertCmd = 'powershell -Command "[Text.Encoding]::Unicode.GetString([Convert]::FromBase64String((gc %TMPFILE%))) | sc %ENDFILE% -NoNewline"',
+
+        [Parameter(ParameterSetName='PathDstCompatible',    Mandatory = $true)]
+        [Parameter(ParameterSetName='PathStrCompatible',    Mandatory = $true)]
+        [Parameter(ParameterSetName='ContentDstCompatible', Mandatory = $true)]
+        [Parameter(ParameterSetName='ContentStrCompatible', Mandatory = $true)]        [switch]
+        $Compatible,
 
         [Parameter()]
         [AllowEmptyString()]
@@ -77,6 +93,12 @@ function ConvertTo-Cmd
         if ($Path)
         {
             $Content = Get-Content -Raw -Path $Path
+        }
+
+        if ($Compatible)
+        {
+            # PowerShell 4 does not like -NoNewline
+            $ConvertCmd = 'powershell -Command "[Text.Encoding]::Unicode.GetString([Convert]::FromBase64String((gc %TMPFILE%))) | sc %ENDFILE%"'
         }
 
         $tmpName = [guid]::NewGuid() -replace '-'
