@@ -63,15 +63,7 @@ function New-FileWithBackup
             $null = Move-Item -Path $Path -Destination $bakPath
         }
 
-        try
-        {
-            $null = Move-Item -Path $tmpPath -Destination $Path
-        }
-        catch
-        {
-            Start-Sleep -Seconds 10
-            $null = Move-Item -Path $tmpPath -Destination $Path
-        }
+        Invoke-CommandWithRetryAndLimit -Command Move-Item -Parameters @{Path = $tmpPath; Destination = $Path}
 
         if ($Versions -and $item)
         {
