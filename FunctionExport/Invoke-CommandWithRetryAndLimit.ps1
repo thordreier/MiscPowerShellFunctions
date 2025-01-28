@@ -30,6 +30,10 @@ function Invoke-CommandWithRetryAndLimit
         $Parameters = @{},
 
         [Parameter()]
+        [switch]
+        $VerboseOnRetry,
+
+        [Parameter()]
         [string]
         $SuccessExceptionRegex = '',
 
@@ -69,6 +73,7 @@ function Invoke-CommandWithRetryAndLimit
     Write-Verbose -Message "Begin (ErrorActionPreference: $ErrorActionPreference)"
     $origErrorActionPreference = $ErrorActionPreference
     $origErrorActionPreferenceGlobal = $global:ErrorActionPreference
+    $origVerbosePreferenceGlobal = $global:VerbosePreference
 
     try
     {
@@ -111,6 +116,7 @@ function Invoke-CommandWithRetryAndLimit
         ProcessVar -Name TotalTryCountdownVariable -Init $TotalTryCountdownInit
         ProcessVar -Name SuccessCountdownVariable  -Init $SuccessCountdownInit
 
+        $beVerbose = $false
         do
         {
             if ($TotalTryCountdownVariable -and $TotalTryCountdownVariable.Value -le 0)
@@ -129,11 +135,17 @@ function Invoke-CommandWithRetryAndLimit
                     'TotalTryCountdownVariable ${0} is {1}' -f $TotalTryCountdownVariable.Name, $TotalTryCountdownVariable.Value-- | Write-Verbose
                 }
                 'Running ScriptBlock...' | Write-Verbose
+                if ($beVerbose -and $VerboseOnRetry)
+                {
+                    $global:VerbosePreference = 'Continue'
+                }
                 & $ScriptBlock
+                $global:VerbosePreference = $origVerbosePreferenceGlobal
                 break
             }
             catch
             {
+                $global:VerbosePreference = $origVerbosePreferenceGlobal
                 'Exception thrown from ScriptBlock: {0}' -f  $_ | Write-Warning
                 if ($SuccessExceptionRegex -and $_ -cmatch $SuccessExceptionRegex)
                 {
@@ -145,9 +157,11 @@ function Invoke-CommandWithRetryAndLimit
                 if ($SuccessCountdownVariable  -and $SuccessCountdownVariable.Value  -le 0) {continue}
                 'Number of retries left {0}, next retry in {1} seconds' -f $RetryCount, $WaitSeconds | Write-Verbose
                 Start-Sleep -Seconds $WaitSeconds
+                $beVerbose = $true
             }
         }
         while ($RetryCount--)
+        $beVerbose = $false
         Start-Sleep -Seconds $WaitSecondsOK
         if ($SuccessCountdownVariable)
         {
@@ -169,6 +183,7 @@ function Invoke-CommandWithRetryAndLimit
     {
         # Clean up ErrorAction
         $global:ErrorActionPreference = $origErrorActionPreferenceGlobal
+        $global:VerbosePreference = $origVerbosePreferenceGlobal
     }
 
     Write-Verbose -Message 'End'
