@@ -60,10 +60,10 @@ function New-FileWithBackup
         {
             $bakName = '{0}.{1}{2}' -f $item.BaseName, $item.LastWriteTimeUtc.ToFileTimeUtc(), $item.Extension
             $bakPath = Join-Path -Path $item.Directory -ChildPath $bakName
-            $null = Move-Item -Path $Path -Destination $bakPath
+            $null = Invoke-CommandWithRetryAndLimit -Command Move-Item -Parameters @{Path = $Path; Destination = $bakPath}
         }
 
-        Invoke-CommandWithRetryAndLimit -Command Move-Item -Parameters @{Path = $tmpPath; Destination = $Path}
+        $null = Invoke-CommandWithRetryAndLimit -Command Move-Item -Parameters @{Path = $tmpPath; Destination = $Path}
 
         if ($Versions -and $item)
         {
