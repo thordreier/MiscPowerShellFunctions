@@ -108,6 +108,7 @@ function Get-WsusComputersAndUpdates
             $computerTargetsDto = [System.Collections.ArrayList]::new()
             foreach ($computerTarget in $computerTargets)
             {
+                $osVersion = $computerTarget.OSInfo.Version | ForEach-Object -Process {$_.Major, $_.Minor, $_.Build, $_.ServicePackMajor, $_.ServicePackMinor -join '.'}
                 $targetUpdates = $computerTarget._TargetUpdates
                 $updateCount = $targetUpdates | ForEach-Object -Begin {$h=@{}} -Process {$h[$_.UpdateInstallationState]+=1} -End {$h}
 
@@ -150,6 +151,7 @@ function Get-WsusComputersAndUpdates
                     Make                     = [string]         $computerTarget.Make
                     Model                    = [string]         $computerTarget.Model
                     OSDescription            = [string]         $computerTarget.OSDescription
+                    OSVersion                = [string]         $osVersion
                     RequestedTargetGroupName = [string]         $computerTarget.RequestedTargetGroupName
                     Status                   = [string]         $status
                     UpdateCount              = [PSCustomObject] $updateCount
